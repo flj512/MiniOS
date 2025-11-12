@@ -10,14 +10,12 @@ if [ ! -f "$ELF_IMAGE" ]; then
     exit 1
 fi
 
-echo "Starting QEMU Cortex-M55 simulator with ARM Semihosting..."
-echo "Expected output: 'Hello, World from Cortex-M55!' and other messages"
-echo "Press Ctrl+A then X to exit QEMU"
-echo ""
 
 # Run QEMU with Cortex-M55
 # Use semihosting and ensure exit codes are properly handled
 $QEMU -machine mps3-an547 -cpu cortex-m55 \
     -kernel "$ELF_IMAGE" \
     -nographic \
-    -semihosting-config enable=on,target=native
+    -semihosting
+
+echo "return value $?"

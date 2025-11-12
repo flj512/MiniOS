@@ -1,51 +1,38 @@
 #include <cstdint>
 #include <cstdio>
 #include <string>
+#include <vector>
+
+#include "os.h"
 
 extern "C" void initialise_monitor_handles(void);
 
-class TestA {
-public:
-    TestA():val_(102){
-
-    }
-    void increase()
-    {
-        val_++;
-    }
-    int get()
-    {
-        return val_;
-    }
-private:
-    int val_;
-};
-
-TestA a;
+int thread(void* args) {
+  int n = *(int*)args;
+  for (int i = 0; i < n + 5; i++) {
+    os_delay(1);
+    printf("Thread %d running %d\n", n, i);
+    // os_thread_yield();
+  }
+  return n;
+}
 
 /**
  * Main function
  */
-int main(void)
-{
-    initialise_monitor_handles();
+int main(void) {
+  // enable semihosting
+  initialise_monitor_handles();
+  printf("OS testing......\n");
 
-    /* Standard printf will now use semihosting through our _write implementation */
-    printf("Hello, World from Cortex-M55!\n");
-    printf("This is a C++ program running on QEMU using semihosting for printf\n");
+  os_init();
 
-    /* Example of formatted output using printf */
-    int value = 42;
-    float pi = 3.14159;
-    printf("Formatted output: integer = %d, pi = %.3f\n", value, pi);
+  std::vector<int> args{2, 6};
+  for (auto& v : args) {
+    os_create_thread(thread, &v);
+  }
 
-    /* Loop for a while to ensure output is processed */
-    for(int counter = 0; counter < 10; counter++) {
-        printf("Still running... Counter: %d\n", counter);  // Provide periodic status via semihosting
-        
-    }
-    
-    printf("Program finished successfully!\n");
-    //fflush(stdout);
-    return a.get();
+  os_run();
+
+  return 0;
 }
